@@ -1,0 +1,349 @@
+<!-- Template Dasar -->
+{% extends 'base.html' %} 
+{%load static%}
+
+<!-- Bagian Monitoring -->
+{% block content %}
+<!-- Right Panel -->
+    <div id="right-panel" class="right-panel">
+        <!-- Header-->
+        <header id="header" class="header">
+            <div class="header-menu">
+                <div class="col-md-12 col-sm-12">
+                    <a id="menuToggle" class="menutoggle pull-left"><i class="fa fa fa-tasks"></i></a>
+                        <h4>Scraping - Welcome</h4>
+                        <!--START Pencarian Berita -->
+                        <form action="{% url 'pencarian' %}" method="POST">
+                        <div class="input-group">
+                        <input id="keyword" name="keyword" placeholder="Penasaran dengan suatu topik? Cari disini" class="form-control">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+                        <div class="input-group-btn"><button class="btn btn-primary">Submit</button></div>
+                        </div>
+                        </form>
+                        <!--END Pencarian Berita -->
+                </div>
+            </div>
+        </header>
+        <!-- Header-->
+
+
+        <div class="content mt-3">
+            
+            <!-- START List Berita -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="float-left">
+                            <h3>Daftar Berita</h3>
+                        </div>
+                        <div class="dropdown float-right">
+                            <select name="namaWeb" id="namaWeb" class="form-control" onchange="filterWeb(this.value)">
+                                <option value="all">Semua Website</option>
+                                <option value="detik">Detik</option>
+                                <option value="kompas">Kompas</option>
+                                <option value="republika">Republika</option>
+                                <option value="sindo">Sindo</option>
+                                <option value="tribun">Tribun</option>
+                                <option value="okezone">Okezone</option> 
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card-body card-block" >
+                        <div class="List_Berita" >
+                            <ul id = "berita_container" class="list-group list-group-flush">
+                            <li class="list-group-item">
+                            <div class="col-md-12">
+                                <span>...Loading...</span>
+                            </div>
+                            </li>
+                        </ul>
+                        </div>
+                        <div id="paginationBerita"></div> 
+                    </div>
+                </div>
+            </div>
+            <!-- END List Berita -->
+
+            <!-- START Top 10 Tag -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="stat-widget-one">
+                            <h5 class="text-sm-center mt-2 mb-1">TOP 10 Tag</h5>
+                            <hr>
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class=" thead-dark">
+                                    <th class="text-center">Tag</th>
+                                    <th class="text-center">Jumlah</th>
+                                </thead>
+                                {% for toptag in toptaglist %}
+                                <tr>           
+                                    <td>{{toptag.tag}}</td>
+                                    <td class="text-center">{{toptag.tag_count}}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <!-- END Top 10 Tag -->
+
+            <!-- START CHART Jumlah Berita di Website -->
+            <div class="col-md-4">
+                 <div class="card">
+                    <div id="chartBerita"></div>
+                </div>
+            </div>
+            <!-- END CHART Jumlah Berita di Website -->            
+          
+            <!-- START CHART Pencarian Twitter -->
+            <div class="col-md-12">
+                 <div class="card">
+                    <div class="card-header">
+                        Pencarian Twitter "<span class="keywordTwitter"></span>"
+                    </div>
+                    <div class="card-body">
+                    <form>
+                        <div class="input-group">
+                            <input id="keywordTwitterSearch" name="keywordTwitterSearch" placeholder="Ubah Topik Twitter disini" class="form-control">
+                            <div class="input-group-btn">
+                                <button onclick="ubahKeywordTwitter()" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            <!-- END CHART Pencarian Indeks Twitter -->
+
+            <!-- START List Twitter -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="float-left">
+                            <h3>Twitter dengan keyword "<span class="keywordTwitter"></span>"</h3>
+                        </div>
+                    </div>
+                    <div class="card-body card-block">
+                        <div class="List_Berita">
+                        <ul id="twitter_container" class="list-group list-group-flush">
+                            ..Loading...
+                        </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END List Twitter -->
+
+            <!-- START Trending Topic Twitter -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body card-block">
+                        <h4 class="text-center">Trending topic Indonesia</h4>
+                        <hr>                        
+                        <table id="trendingTwitter">  
+                            <tr>
+                                <td>..Loading...</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- END Trending Topic Twitter -->
+
+        </div>
+    </div>
+    <!-- Right Panel -->
+
+    <script src="{% static 'js/vendor/jquery-2.1.4.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+    function loadChartBerita(){
+    // Load grafik bar chart berita, jumlah berita di tiap website
+    // Chart dibangun dengan library Plotly
+        $.ajax({
+            type        : 'POST', // define the type of HTTP verb we want to use (POST for our form)
+            data        : {'csrfmiddlewaretoken' : "{{ csrf_token }}"},
+            url         : 'chartBerita/', // the url where we want to POST
+            dataType    : 'json', // what type of data do we expect back from the server
+            encode      : true
+        })
+        .done(function(data) {
+            var dataPlot = [{
+                x: data["beritaNamaPlot"],
+                y: data["beritaJumlahPlot"],
+                type: 'bar'
+            }]
+            var layout = {
+            title: 'Jumlah Berita',
+            }
+            Plotly.newPlot('chartBerita', dataPlot, layout);
+        })        
+    }
+
+
+    function retrievePage(page, website_name) {
+    // Fungsi ini digunakna untuk mengambil berita di halaman tertentu
+    // page : nomor dimana halaman ini berada
+    // website_name : nama website jika ada (default all)
+        var formData = {
+                'page' : page,
+                'website_name' : website_name,
+                'csrfmiddlewaretoken' : "{{ csrf_token }}",
+            };
+        $.ajax({
+            type        : 'POST', 
+            url         : 'homePagination/', 
+            data        : formData,
+            dataType    : 'json', 
+            encode      : true,
+            success: function(data) {
+                $("#berita_container").empty();
+                if(data.total == 0){
+                    str = "<div><p>Tidak ada berita yang ditemukan</p><p>Silahkan melakukan pencarian dengan keyword lain atau melakukan scraping</p></div>"
+                    $("#berita_container").append(str);
+                }
+                for (var x = 0; x < data.beritaList.length; x++) {
+                var str = '<li class="list-group-item">' +
+                    '<div class="col-md-12">' +
+                    '<h5><a href="' + data.beritaList[x]["url"] + '" target="_blank">' + 
+                    data.beritaList[x]["judul"] + '</a></h5>' +
+                    '<span>' + data.beritaList[x]["website"] + 
+                    ' - ' + data.beritaList[x]["date"] + '</span><br>';
+                for (var i = 0; i < data.tags[x].length; i++) {
+                    str = str + '<span class="badge badge-primary" style="margin: 2px;">' + data.tags[x][i]["tags"] + '</span>';
+                }
+                str = str + '</div></li>';
+                $("#berita_container").append(str);
+                }
+                loadPagination(page, data.total, data.beritaPerPage, website_name);
+            }
+        })
+    }
+
+    function loadPagination(currentPage, totalCount, beritaPerPage, websiteName){
+    // Fungsi ini digunakan untuk mengambil pagination
+    // currentPage : Halaman dimana halaman ini berada
+    // totalCount : total Berita yang ada
+    // beritaPerPage : jumlah berita tiap halaman (default 10)
+    // websiteName : nama website jika ada (default all)
+        var str = '<div class="float-right"><ul class="pagination">';
+        var totalPage = Math.ceil(totalCount/beritaPerPage);
+        if (currentPage != 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">&lt;</a></li>';
+        }
+        if (currentPage > 3) {
+            str = str + '<li class="page-item"><a class="page-link pag">1</a></li>';
+        }
+        if (currentPage > 4) {
+            str = str + '<li class="page-item page-link">...</li>';
+        }
+        if (currentPage > 2) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage - 2) + '</a></li>';
+        }
+        if (currentPage > 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage - 1) + '</a></li>';
+        }
+        str = str + '<li class="page-item"><a class="page-link"><b id="current-page">' + currentPage + '</b></a></li>';
+        if (totalPage - currentPage > 0) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage + 1) + '</a></li>';
+        }
+        if (totalPage - currentPage > 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage + 2) + '</a></li>';
+        }
+        if (totalPage - currentPage > 3) {
+            str = str + '<li class="page-item page-link">...</li>';
+        }
+        if (totalPage - currentPage > 2) {
+            str = str + '<li class="page-item"><a class="page-link pag">'+totalPage+'</a></li>';
+        }
+        if (currentPage != totalPage) {
+            str = str + '<li class="page-item"><a class="page-link pag">&gt;</a></li>';
+        }
+        str = str + '</ul></div>';
+        $("#paginationBerita").html(str);
+        $(".pag,.page-link").click(function(){
+            // console.log("hey");
+            var param = $(this).html();
+            if (param == "&lt;") {
+                retrievePage(parseInt($("#current-page").html()) - 1, websiteName);
+            }
+            else if (param == "&gt;") {
+                retrievePage(parseInt($("#current-page").html()) + 1, websiteName);
+            }
+            else {
+                retrievePage(parseInt(param), websiteName);
+            }
+        });
+
+    }
+
+    function filterWeb(nama_website) {
+    // Fungsi untuk melakukan filter berita dari website tertentu
+    // nama_website : nama dari website tersebut
+        $("#berita_container").html("Loading...");
+        retrievePage(1, nama_website);
+    }
+
+    function getTwitter(keywordTwitter){
+    // Fungsi ini digunakan untuk mengambil data dari twitter dengan API
+        var formData = {
+                'keywordTwitter' : keywordTwitter,
+                'csrfmiddlewaretoken' : "{{ csrf_token }}",
+            };
+        
+        $.ajax({
+            type        : 'POST',
+            url         : '{%url "twitterAPI" %}',
+            data        : formData,
+            dataType    : 'json',
+            encode      : true,
+            success: function(data) {
+                $("#twitter_container").empty();
+                console.log(data);
+                for (var x = 0; x < data.dataTwitter.length ; x++) {
+                str = '<li class="list-group-item"><div class="col-md-12">'+ data.dataTwitter[x]["tweet"] + '<p><span class="badge badge-primary">@'+data.dataTwitter[x]["user"]+'</span> <span class="badge badge-warning">'+data.dataTwitter[x]["lokasi"]+'</span> <span class="badge badge-success">'+data.dataTwitter[x]["tanggal"]+'</span></p><div></li>';
+                $("#twitter_container").append(str);
+                }
+                $(".keywordTwitter").append(keywordTwitter);
+                getTrendingTwitter(data.trendTwitter)
+            }
+        })
+    }
+
+    function getTrendingTwitter(trends){
+    // Fungsi ini digunakan untuk menampilkan trending topic dari twitter 
+    // dari data yang sudah didapatkan
+    // trends : array yang terdiri dari url & nama_trend 
+        $("#trendingTwitter").empty()
+        for(var x = 0; x < trends.length ; x++){
+            str = '<tr><td><a href="'+trends[x]["url"]+'">'+ trends[x]["trend"]+'</a></td></tr>'
+            $("#trendingTwitter").append(str);
+        }
+    }
+
+    function ubahKeywordTwitter(){
+        event.preventDefault();
+        var keyword = document.getElementById('keywordTwitterSearch').value;
+        console.log(keyword);
+        $("#twitter_container").empty();
+        $("#trendingTwitter").empty();
+        $(".keywordTwitter").empty();
+        getTwitter(keyword);
+    }
+
+    $(document).ready(function() {
+        retrievePage(1, 'all');
+        loadChartBerita();
+        getTwitter("Saham");
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{%load static%}
+<!DOCTYPE html>
+<html>
+<head>
+	    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}Scraping{% endblock %}</title>
+    <meta name="description" content="Sufee Admin - HTML5 Admin Template">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <link rel="apple-touch-icon" href="apple-icon.png"> -->
+    <!-- <link rel="shortcut icon" href="favicon.ico"> -->
+
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css'%}">
+    <link rel="stylesheet" href="{% static 'css/themify-icons.css'%}">
+    <link rel="stylesheet" href="{% static 'css/flag-icon.min.css'%}">
+    <link rel="stylesheet" href="{% static 'css/cs-skin-elastic.css'%}">
+    <!-- <link rel="stylesheet" href="assets/css/bootstrap-select.less"> -->
+    <link rel="stylesheet" href="{% static 'scss/style.css'%}">
+    <link href="{% static 'css/lib/vector-map/jqvmap.min.css'%}" rel="stylesheet">
+    
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Abril+Fatface" rel="stylesheet">	
+
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
+
+	{% block stylesheet%}{% endblock %}
+</head>
+<body>
+	<aside id="left-panel" class="left-panel">
+
+        <nav class="navbar navbar-expand-sm navbar-default">
+            <div class="navbar-header">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-menu" aria-controls="main-menu" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="{% url 'home' %}" style="font-family: 'Abril Fatface', cursive;"><h2>Scraping</h2></a>
+                <a class="navbar-brand hidden" href="./" style="font-family: 'Abril Fatface', cursive;"><h2>B</h2></a>
+            </div>
+
+            <div id="main-menu" class="main-menu collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- /.menu-title -->
+                    <h3 class="menu-title">Scraping</h3>
+                    <!-- START navigation -->
+                    <li>
+                        <a href="{% url 'home'%}"><i class="menu-icon fa fa-dashboard"></i>Monitoring</a>
+                    </li>                    
+                    <li>
+                        <a href="{% url 'pencarian'%}"><i class="menu-icon fa fa-dashboard"></i>Pencarian</a>
+                    </li>
+                    <li class="menu-item-has-children dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="menu-icon fa fa-table"></i>Tabulasi</a>
+                        <ul class="sub-menu children dropdown-menu">
+                            <li><i class="fa fa-table"></i><a href="{% url 'tabulasiBerita'%}">Berita</a></li>
+                            <li><!-- <i class="fa fa-table"></i><a href="{% url 'tabulasiLowongan'%}">Lowongan Kerja</a></li> -->
+                        </ul>
+                    </li>
+
+                    <li class="menu-item-has-children dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="menu-icon fa fa-th"></i>Scraping</a>
+                        <ul class="sub-menu children dropdown-menu">
+                            <li><i class="menu-icon fa fa-th"></i><a href="{% url 'scrapsBerita'%}">Scraping Berita</a></li>
+                            <li><!-- <i class="menu-icon fa fa-th"></i><a href="{% url 'scrapsLowongan'%}">Scraping Lowongan Kerja</a></li>
+                        </ul> -->
+                    </li>
+                    <!-- END navigation -->
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </nav>
+
+    </aside><!-- /#left-panel -->
+	{% block content%}
+	{% endblock %}
+</body>
+</html>
+

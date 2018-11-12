@@ -1,0 +1,28 @@
+2018-05-29T12:54:30+0700 [-] Loading c:\users\user\miniconda3\lib\site-packages\scrapyd\txapp.py...
+2018-05-29T12:54:34+0700 [-] Scrapyd web console available at http://127.0.0.1:6800/
+2018-05-29T12:54:34+0700 [-] Loaded.
+2018-05-29T12:54:34+0700 [twisted.application.app.AppLogger#info] twistd 17.9.0 (c:\users\user\miniconda3\python.exe 3.6.3) starting up.
+2018-05-29T12:54:34+0700 [twisted.application.app.AppLogger#info] reactor class: twisted.internet.selectreactor.SelectReactor.
+2018-05-29T12:54:34+0700 [-] Site starting on 6800
+2018-05-29T12:54:34+0700 [twisted.web.server.Site#info] Starting factory <twisted.web.server.Site object at 0x03E131B0>
+2018-05-29T12:54:34+0700 [Launcher] Scrapyd 1.2.0 started: max_proc=16, runner='scrapyd.runner'
+2018-05-29T13:02:23+0700 [-] Received SIGINT, shutting down.
+2018-05-29T13:02:23+0700 [-] (TCP Port 6800 Closed)
+2018-05-29T13:02:23+0700 [twisted.web.server.Site#info] Stopping factory <twisted.web.server.Site object at 0x03E131B0>
+2018-05-29T13:02:23+0700 [-] Main loop terminated.
+2018-05-29T13:02:23+0700 [-] Server Shut Down.
+2018-05-29T13:02:23+0700 [twisted.application.app.AppLogger#info] Server Shut Down.
+2018-05-29T13:02:28+0700 [-] Loading c:\users\user\miniconda3\lib\site-packages\scrapyd\txapp.py...
+2018-05-29T13:02:31+0700 [-] Scrapyd web console available at http://127.0.0.1:6800/
+2018-05-29T13:02:31+0700 [-] Loaded.
+2018-05-29T13:02:31+0700 [twisted.application.app.AppLogger#info] twistd 17.9.0 (c:\users\user\miniconda3\python.exe 3.6.3) starting up.
+2018-05-29T13:02:31+0700 [twisted.application.app.AppLogger#info] reactor class: twisted.internet.selectreactor.SelectReactor.
+2018-05-29T13:02:31+0700 [-] Site starting on 6800
+2018-05-29T13:02:31+0700 [twisted.web.server.Site#info] Starting factory <twisted.web.server.Site object at 0x032E4170>
+2018-05-29T13:02:31+0700 [Launcher] Scrapyd 1.2.0 started: max_proc=16, runner='scrapyd.runner'
+2018-05-29T13:09:41+0700 [-] Received SIGINT, shutting down.
+2018-05-29T13:09:41+0700 [-] (TCP Port 6800 Closed)
+2018-05-29T13:09:41+0700 [twisted.web.server.Site#info] Stopping factory <twisted.web.server.Site object at 0x032E4170>
+2018-05-29T13:09:41+0700 [-] Main loop terminated.
+2018-05-29T13:09:41+0700 [-] Server Shut Down.
+2018-05-29T13:09:41+0700 [twisted.application.app.AppLogger#info] Server Shut Down.

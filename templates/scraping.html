@@ -1,0 +1,237 @@
+{% extends 'base.html' %} 
+{%load static%}
+
+{% block content %}
+<div id="right-panel" class="right-panel">
+	<header id="header" class="header">
+		<div class="header-menu">
+			<div class="col-md-12 col-sm-12">
+				<a id="menuToggle" class="menutoggle pull-left"><i class="fa fa fa-tasks"></i></a>
+				<h4>Scraping | Scraping Berita</h4>
+			</div>
+		</div>
+	</header>
+
+	<div class="content mt-3">	
+	<!-- START Log Scraping -->
+	<div class="col-md-4 float-right">
+		<div class="card">
+			<div class="card-header">
+				<div class="float-left">
+					<h3>Log</h3>
+				</div>
+			</div>
+			<div class="card-body card-block" >	
+				<div id="prosesScrap" class="prosesScrap">	
+				<p>Tidak ada scraping yang sedang berjalan</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END Log Scraping-->
+
+	<!-- START Scraping Berita -->
+	<div class="col-md-6" style="position: fixed;">
+		<div class="card">
+		<div class="card-header">
+			<div class="float-left">
+				<h3>Scraping Berita</h3>
+			</div>
+		</div>
+		<div class="card-body card-block" >	
+			<form action="">
+				<div class="row form-group">
+					<div class="col col-md-3"><label for="select" class=" form-control-label">Pilih Website</label></div>
+					<div class="col-12 col-md-9">
+						<select class="form-control" id="website_name" name="website_name" required>
+							<option value="detik">Detik</option>
+							<option value="kompas">Kompas</option>
+							<option value="republika">Republika</option>
+							<option value="sindo">Sindo</option>
+							<option value="tribun">Tribun</option>
+							<option value="okezone">Okezone</option>
+						</select>
+					</div>
+				</div>
+				<div class="row form-group">
+                    <div class="col col-md-3"><label class=" form-control-label">Pilih Tanggal</label></div>
+                    <div class="col-12 col-md-9"><input type="date" id="dates" name="dates" class="form-control " required><small id="peringatanTanggal" class="help-block form-text">Silahkan Pilih Tanggal untuk Scraping Berita</small></div>
+
+                </div>
+				<button id='crawlBerita'onclick="crawl()" class="btn btn-lg btn-info btn-block col-md-9 float-right">
+                    Scraping Berita
+                </button>
+			</form>
+		</div>
+		</div>
+	</div>
+	<!-- END Scraping Berita -->
+	
+</div>
+	<script src="{% static 'js/vendor/jquery-2.1.4.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+	<script>
+	function maxDate(){
+	// Fungsi untuk membatasi tanggal. 
+	// Tidak mungkin melakukan scraping berita keesokan harinya
+		var today = new Date();
+		var day = today.getDate();
+		var month = today.getMonth()+1; //January is 0!
+		var year = today.getFullYear();
+ 		
+ 		if(day<10){
+        	day='0'+day
+    	} 
+    	
+    	if(month<10){
+        	month='0'+month
+    	} 
+		today = year+'-'+month+'-'+day;
+		document.getElementById("dates").setAttribute("max", today);
+	}
+	
+	function isValidDate(d) {
+	// Mengecek apakah tanggal valid 
+ 		return d instanceof Date && !isNaN(d);
+	}
+
+	function crawl(){
+	// Fungsi untuk memulai scraping.
+		event.preventDefault();
+		$('#crawlBerita').prop('disabled', true);
+		// stop the form from submitting the normal way and refreshing the page
+		var website_name = document.getElementById('website_name').value;
+		var tanggal = new Date(document.getElementById('dates').value);
+		console.log(isValidDate(tanggal));
+		if(isValidDate(tanggal)){				
+		//Ubah tanggal ke format DD/MM/YYYY
+			var dd = tanggal.getDate();
+			var mm = tanggal.getMonth()+1; //Januari = 0
+			var yyyy = tanggal.getFullYear();
+			if(dd<10){
+				dd='0'+dd;
+			} 
+			if(mm<10){
+				mm='0'+mm;
+			} 
+			var tanggalHasil = yyyy+'-'+mm+'-'+dd;
+
+			switch(website_name){
+				case "detik":
+					url =  "https://news.detik.com/indeks/all?date="; //02/01/2018 
+					var tanggal_fix = mm+'%2F'+dd+'%2F'+yyyy;
+					break;	
+				case "kompas":
+					url =  "https://news.kompas.com/search/"; //2018-02-01
+					var tanggal_fix = yyyy+'-'+mm+'-'+dd;
+					break;
+				case "republika":
+					url =  "http://www.republika.co.id/index/"; //2018/02/01
+					var tanggal_fix = yyyy+'/'+mm+'/'+dd;
+					break;
+				case "sindo":
+					url =  "https://index.sindonews.com/index/0?t="; //2018-02-01
+					dd = tanggal.getDate();
+					mm = tanggal.getMonth()+1;
+					var tanggal_fix = yyyy+'-'+mm+'-'+dd;
+					break;
+				case "tribun":
+					dd = tanggal.getDate();
+					mm = tanggal.getMonth()+1;
+					url =  "http://www.tribunnews.com/index-news?date="; //2018-2-1
+					var tanggal_fix = yyyy+'-'+mm+'-'+dd;
+					break;
+				case "okezone":
+					// https://news.okezone.com/indeks/2018/03/01
+					url =  "https://news.okezone.com/indeks/"; //2018/02/01
+					var tanggal_fix = yyyy+'/'+mm+'/'+dd;
+					break;
+
+			}
+			var url_fix = url+tanggal_fix; //gabungkan url + tanggal
+
+			// console.log(url_fix)
+			// console.log("DONE")
+
+			// $("#prosesScrap").append('<p> Link: ' + url_fix + '</p>');
+			var formData = {
+				'url' : url_fix,
+				'website' : website_name, 
+			};
+			// console.log(formData)
+			$.ajax({
+				type        : 'POST', // define the type of HTTP verb we want to use (POST for our form)
+				url         : '/api/crawl/', // the url where we want to POST
+				data        : formData, // our data object
+				dataType    : 'json', // what type of data do we expect back from the server
+				encode      : true
+			})
+				// using the done promise callback
+				.done(function(data) {
+
+					// log data to the console so we can see
+					// console.log(data);
+					var date = new Date() 
+					$("#prosesScrap").html('<p> Website: ' + website_name + '</p>');
+					$("#prosesScrap").append('<p> Link: ' + url_fix + '</p>');
+					$("#prosesScrap").append('<p>Proses : ' + data["status"] +' - '+ date.getDate() + '-' + (date.getMonth()+1) + '-' + date.getFullYear() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '</p>');
+					taskId = data["task_id"]
+					uniqueId = data["unique_id"]
+					interval = setInterval(test_check, 5000, taskId, uniqueId, url_fix, tanggalHasil, website_name);
+					// here we will handle errors and validation messages
+				})
+
+			// stop the form from submitting the normal way and refreshing the page
+			// event.preventDefault();
+			}else{
+				$('#crawlBerita').prop('disabled', false);
+				$('#peringatanTanggal').empty()
+				$('#peringatanTanggal').append("Tanggal Tidak Valid. Mohon pilih tanggal yang benar")
+
+			}
+
+		}
+ 
+		function test_check(taskId, uniqueId, url_fix, tanggal, website_name){
+		// Untuk mengecek status dari crawling yang sedang berjalan
+			// console.log("test_check_itself");
+			if (taskId && uniqueId) {
+				var formData = {
+					'task_id'   : taskId,
+					'unique_id'	: uniqueId,
+					'url'		: url_fix,
+				};
+				$.ajax({
+					type        : 'GET', // define the type of HTTP verb we want to use (POST for our form)
+					url         : '/api/crawl/', // the url where we want to POST
+					data        : formData, // our data object
+					dataType    : 'json', // what type of data do we expect back from the server
+					encode      : true
+				})
+				// using the done promise callback
+				.done(function(data) {
+
+					// log data to the console so we can see
+					console.log(data);
+					var date = new Date()
+        			$("#prosesScrap").append('<p>Proses : ' + data["status"] +' - '+ date.getDate() + '-' + (date.getMonth()+1) + '-' + date.getFullYear() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '</p>');
+					if (data["status"]=="finished") {
+						clearInterval(interval);
+						$('#crawlBerita').prop('disabled', false);
+						$('#prosesScrap').append('Untuk melihat hasil scraping silahkan klik link berikut <form class = "badge" method="POST" action="{% url "detailBerita"%}"><input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}"><input type="hidden" name="website" value="'+website_name+'"><input type="hidden" name="tanggal" value="'+tanggal+'"><button class="btn btn-sm btn-primary">Lihat Hasil</button></form>');
+					}
+				});
+			}
+		}
+
+	$(document).ready(function() {
+        maxDate();
+    });
+		
+	</script>
+</div>
+{% endblock %}

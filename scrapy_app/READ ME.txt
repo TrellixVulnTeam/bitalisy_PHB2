@@ -1,0 +1,11 @@
+Dokumentasi untuk scrapy_app
+
+Scrapy_app adalah project "scrapy"
+Aplikasi ini dapat digunakan untuk mengambil data dari berita melalui "spider" 
+Spider untuk berita dapat dilihat di scrapy_app/spiders
+
+Setelah spider selesai melakukan scraping. Maka data akan melewati pipeline untuk disimpan ke dalam database. 
+
+Untuk lebih lengkapnya silahkan membaca dokumentasi mengenai SCRAPY di https://doc.scrapy.org/en/latest/intro/tutorial.html
+
+Setting scrapy -> scrapy.cfg

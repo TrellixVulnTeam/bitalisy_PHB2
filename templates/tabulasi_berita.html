@@ -1,0 +1,218 @@
+{% extends 'base.html' %} 
+{%load static%}
+{% block stylesheet%}
+	<link rel="stylesheet" href="{% static 'css/lib/datatable/dataTables.bootstrap.min.css'%}">
+{% endblock %}
+
+
+{% block content %}
+<div id="right-panel" class="right-panel">
+	<header id="header" class="header">
+        <div class="header-menu">
+           <div class="col-md-12 col-sm-12">
+                    <a id="menuToggle" class="menutoggle pull-left"><i class="fa fa fa-tasks"></i></a>
+                        <h4>Scraping | Tabulasi Berita</h4>
+                        <form action="{% url 'pencarian' %}" method="POST">
+                        <div class="input-group">
+                        <input id="keyword" name="keyword" placeholder="Penasaran dengan suatu topik? Cari disini" class="form-control">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+                        <div class="input-group-btn"><button class="btn btn-primary">Submit</button></div>
+                        </div>
+                        </form>
+                </div>
+        </div>
+    </header>
+
+            <div class="content mt-3">
+                <div class="animated fadeIn">
+                <div class="row">
+                    
+                    <!-- START Grafik Line Berita -->
+                    <div class="col-md-12">
+                        <div class="card"> 
+                            <div id="chartLineBerita"></div>
+                        </div>
+                    </div>
+                    <!-- END Grafik Line Berita -->
+                    
+                    <!-- START Tabel List Berita -->
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong class="card-title">Database Berita</strong>
+                                <div class="float-right">
+                                Pilih Bulan :
+                                <input type="month" id="bulan" onchange="getBerita()">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Website [Nama website (jumlah berita)]</th>
+                                </tr>
+                                </thead>
+                            <tbody id="tabelBerita"></tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END Tabel List Berita -->
+
+            </div>
+        </div>
+    </div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script src="{% static 'js/lib/data-table/datatables.min.js'%}"></script>
+<script src="{% static 'js/lib/data-table/dataTables.bootstrap.min.js'%}"></script>
+<script src="{% static 'js/lib/data-table/dataTables.buttons.min.js'%}"></script>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+    
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script type="text/javascript">
+function getBerita() {
+// Mendapatkan data Berita
+    $("#tabelBerita").empty();
+    d = document.getElementById('bulan').value;
+    var bulanTerpilih = new Date(d);
+    if (bulanTerpilih.getMonth() == 11) {
+        var bulanDepan = new Date(bulanTerpilih.getFullYear() + 1, 0, 1);
+    } else {
+        var bulanDepan = new Date(bulanTerpilih.getFullYear(), bulanTerpilih.getMonth() + 1, 1);
+    }
+
+    var formData = {
+        'month' : bulanTerpilih.getMonth()+1,
+        'year' : bulanTerpilih.getFullYear(),
+        'csrfmiddlewaretoken' : "{{ csrf_token }}", //NEED IN DJANGO TO POST DATA
+    };
+    $.ajax({
+        type        : 'POST', // define the type of HTTP verb we want to use (POST for our form)
+        url         : {% url 'jumlahBerita' %}, // the url where we want to POST
+        data        : formData,
+        dataType    : 'json', // what type of data do we expect back from the server
+        encode      : true
+    })
+    .done(function(data) {
+        console.log(data);
+        chartBerita(data['detik'],data['tanggalDetik'],data['kompas'],data['tanggalKompas'],data['republika'],data['tanggalRepublika'],data['sindo'],data['tanggalSindo'],data['tribun'],data['tanggalTribun'],data['okezone'],data['tanggalOkezone'])
+        var str = '';
+        var buttonWeb = '';
+
+        if(data['result'].length > 0){
+          for (var i = 0; i < data['result'].length; i++) {
+            console.log(data['result'].length);
+            if(i == 0){
+              str = str + '<tr><td>' + data['result'][i]['date'] + '</td><td>';
+              website = data['result'][i]['website'];
+              jumlah = data['result'][i]['jumlah'];
+            }else if(data['result'][i]['date'] == data['result'][i-1]['date']){
+              website = data['result'][i]['website'];
+              jumlah = data['result'][i]['jumlah'];
+            }else{
+              str = str + '</td></tr><tr><td>' + data['result'][i]['date'] + '</td><td>';
+              website = data['result'][i]['website'];
+              jumlah = data['result'][i]['jumlah'];
+            }
+
+        str = str +'<form class="badge" method="POST" action="{% url 'detailBerita'%}"><input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}"><input type="hidden" name="website" value="'+website+'"><input type="hidden" name="tanggal" value="'+data['result'][i]['date']+'">'   
+        if(website == 'detik'){
+          buttonWeb = '<button class="btn btn-primary" href="{% url 'detailBerita'%}" onclick="detailBerita('+data['result'][i]['date']+',\'detik\')">'+website +' <span class="badge badge-light">'+jumlah+'</span></button> ';
+          console.log("detik");
+        }else if(website =='kompas'){
+          buttonWeb = '<button class="btn btn-warning">'+website +' <span class="badge badge-light">'+jumlah+'</span></button></form>';
+          console.log("kompas");
+        }else if(website =='republika'){
+          buttonWeb = '<button class="btn btn-danger">'+website +' <span class="badge badge-light">'+jumlah+'</span></button> ';
+          console.log("republika");
+        }else if(website =='sindo'){
+          buttonWeb = '<button class="btn btn-success">'+website +' <span class="badge badge-light">'+jumlah+'</span></button> ';
+          console.log("sindo");
+        }else if(website =='tribun'){
+          buttonWeb = '<button class="btn btn-secondary">'+website +' <span class="badge badge-light">'+jumlah+'</span></button> ';
+          console.log("tribun");
+        }else if(website =='okezone'){
+          buttonWeb = '<button class="btn btn-outline-primary">'+website +' <span class="badge badge-light">'+jumlah+'</span></button> ';
+          console.log("okezone");
+        }
+        str = str+ buttonWeb + '</form>';
+        }
+        }else{
+          str = '<tr><td>Data Tidak Tersedia </td><td>Silahkan melakukan Scraping untuk bulan ini</td></tr>';
+        }
+        $("#tabelBerita").append(str);      
+    })
+}
+  
+function chartBerita(detik =null, tanggalDetik=null, kompas=null, tanggalKompas=null, republika=null, tanggalRepublika, sindo=null, tanggalSindo=null, tribun=null, tanggalTribun=null, okezone=null, tanggalOkezone=null){
+//Load Grafik Berita 
+    var detik = {
+        x: tanggalDetik,
+        y: detik,
+        name: 'Detik',
+        type: 'scatter'
+    };
+  
+    var kompas = {
+        x: tanggalKompas,
+        y: kompas,
+        name: 'Kompas',
+        type: 'scatter'
+    };
+  
+    var republika = {
+        x: tanggalRepublika,
+        y: republika,
+        name: 'Republika',
+        type: 'scatter'
+    };
+  
+    var sindo = {
+        x: tanggalSindo,
+        y: sindo,
+        name: 'Sindo',
+        type: 'scatter'
+    };
+
+    var tribun = {
+        x: tanggalTribun,
+        y: tribun,
+        name: 'Tribun',
+        type: 'scatter'
+    };
+
+    var okezone = {
+        x: tanggalOkezone,
+        y: okezone,
+        name: 'Okezone',
+        type: 'scatter'
+    };
+    var dataPlot = [detik, kompas,republika,sindo,tribun,okezone];
+    var layout = {
+        title: "Jumlah Berita Bulan ini",
+    }
+  
+    Plotly.newPlot('chartLineBerita', dataPlot, layout);
+}
+    
+function detailBerita(tanggal, website){
+// Fungsi untuk mengarakan ke halaman detail berita
+    console.log("tanggal" + tanggal);
+    console.log("tanggal" + website);
+    var formData = {
+        'csrfmiddlewaretoken' : "{{ csrf_token }}",
+    };
+
+    window.location.replace("{% url 'detailBerita'%}"); 
+}
+
+$(document).ready(function() {
+    document.getElementById("bulan").defaultValue = "2018-02";
+    getBerita();
+} );
+</script>
+{% endblock %}

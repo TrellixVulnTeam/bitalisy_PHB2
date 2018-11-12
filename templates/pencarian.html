@@ -1,0 +1,279 @@
+<!-- Template Dasar -->
+{% extends 'base.html' %} 
+{%load static%}
+
+<!-- Bagian Monitoring -->
+{% block content %}
+<!-- Right Panel -->
+
+    <div id="right-panel" class="right-panel">
+
+        <!-- Header-->
+        <header id="header" class="header">
+
+            <div class="header-menu">
+
+                <div class="col-md-12 col-sm-12">
+                    <a id="menuToggle" class="menutoggle pull-left"><i class="fa fa fa-tasks"></i></a>
+                        <h4>Scraping | Hasil Pencarian "{{keyword}}"</h4>
+                        <!--START Pencarian Berita -->
+                        <form action="{% url 'pencarian' %}" method="POST">
+                        <div class="input-group">
+                        <input id="keyword" name="keyword" placeholder="Penasaran dengan suatu topik? Cari disini" class="form-control">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+                        <div class="input-group-btn"><button class="btn btn-primary">Submit</button></div>
+                        </div>
+                        </form>
+                        <!--END Pencarian Berita -->
+                        <div style="margin-top: 4px;">
+                            <button id="btn-toggle" onclick="toggleFilter()" class="float-right btn btn-warning btn-sm">Filter Tambahan</button>
+                        </div>
+                        <br>
+                        <div id= "filterTambahan" style="display: none;">
+                            <div class="form-group col-md-4">
+                                <label for="exampleInputName2" class="pr-1  form-control-label">Tanggal Awal</label>
+                                <input type="date" id="startDate" name="startDate" class="form-control" onchange="filterDate()">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="exampleInputName2" class="pr-1  form-control-label">Tanggal Akhir</label>
+                                <input type="date" id="endDate" name="endDate" class="form-control" onchange="filterDate()">
+                            </div>
+                        </div>
+                </div>
+
+            </div>
+
+        </header><!-- /header -->
+        <!-- Header-->
+
+        <div class="content mt-3">
+            <!-- START Hasil Pencarian Berita -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="float-left">
+                            <h5>Ditemukan <span id="jumlahBerita"></span> berita tentang {{keyword}}</h5>
+                        </div>
+                        <div class="dropdown float-right">
+                            <select name="namaWeb" id="namaWeb" class="form-control" onchange="filterWeb('{{keyword}}' , this.value)">
+                                <option value="all">Semua Website</option>
+                                <option value="detik">Detik</option>
+                                <option value="kompas">Kompas</option>
+                                <option value="republika">Republika</option>
+                                <option value="sindo">Sindo</option>
+                                <option value="tribun">Tribun</option>
+                                <option value="okezone">Okezone</option> 
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body card-block" >
+                        <div class="List_Berita" >
+                            <ul id = "berita_container" class="list-group list-group-flush">
+                            <li class="list-group-item">
+                            <div class="col-md-12">
+                                <span>...Loading...</span>
+                            </div>
+                            </li>
+                        </ul>
+                        </div>
+                        <!-- <hr>     -->
+                        <div id="paginationBerita"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- END Hasil Pencarian Berita -->
+        </div> <!-- .content -->
+    </div><!-- /#right-panel -->
+
+    <!-- Right Panel -->    
+
+    <script src="{% static 'js/vendor/jquery-2.1.4.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+    <script src="{% static 'js/plugins.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        function retrievePage(keyword, page, website_name, startDate = null, endDate = null) {
+        // Mengambil berita di halaman itu berada
+        // keyword : kata kunci pencarian
+        // website_name : nama website jika diperlukan sortir
+        // startDate : tanggal awal untuk sortir berita. Jika tidak di spesifikasi, dianggap null
+        // endDate : tanggal akhir untuk sortir berita. Jika tidak di spesifikasi, dianggap null
+        var formData = {
+                'keyword' : keyword,
+                'page' : page,
+                'website_name' : website_name,
+                'startDate' : startDate,
+                'endDate' : endDate,
+                'csrfmiddlewaretoken' : "{{ csrf_token }}",
+            };
+        // console.log(formData) 
+        $.ajax({
+            type        : 'POST', // define the type of HTTP verb we want to use (POST for our form)
+            url         : {% url 'loadBerita' %}, // the url where we want to POST
+            data        : formData,
+            dataType    : 'json', // what type of data do we expect back from the server
+            encode      : true,
+            success: function(data) {
+                console.log(data)
+                $("#berita_container").empty();
+                if(data.total == 0){
+                    str = "<div><p>Tidak ada berita yang ditemukan</p><p>Silahkan melakukan pencarian dengan keyword lain atau melakukan scraping</p></div>"
+                    $("#berita_container").append(str);
+                }
+                for (var x = 0; x < data.beritaList.length; x++) {
+                var str = '<li class="list-group-item">' +
+                    '<div class="col-md-8">' +
+                    '<h5><a href="' + data.beritaList[x]["url"] + '" target="_blank">' + 
+                    data.beritaList[x]["judul"] + '</a></h5>' +
+                    '<span>' + data.beritaList[x]["website"] + 
+                    ' - ' + data.beritaList[x]["date"] + '</span><br></div><div class="col-md-3">';
+                for (var i = 0; i < data.tags[x].length; i++) {
+                    str = str + '<span class="badge badge-primary" style="margin: 2px;">' + data.tags[x][i]["tags"] + '</span>';
+                }
+                str = str + '</div></li>';
+                $("#berita_container").append(str);
+                }
+                console.log(data.pagenya)
+                $('#jumlahBerita').html(data.total);
+                loadPagination(page, data.total, data.beritaPerPage, website_name, keyword);
+                console.log(data);
+            }
+        })
+    }
+
+    function loadPagination(currentPage, totalCount, beritaPerPage, websiteName, keyword){
+    // Menampilkan pagination
+    // currentPage : halaman dimana halaman sekarang berasal
+    // totalCount : jumlah berita yang muncul di pencarian
+    // beritaPerPage : dalam 1 halaman, berapa jumlah berita yang dispesifikasi
+    // websiteName : website mana yang dipilih jika ada filter
+    // keyword : kata kunci apa yang digunakan dalam pencarian
+        var str = '<div class="float-right"><ul class="pagination">';
+        var totalPage = Math.ceil(totalCount/beritaPerPage);
+        if (currentPage != 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">&lt;</a></li>';
+        }
+        if (currentPage > 3) {
+            str = str + '<li class="page-item"><a class="page-link pag">1</a></li>';
+        }
+        if (currentPage > 4) {
+            str = str + '<li class="page-item page-link">...</li>';
+        }
+        if (currentPage > 2) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage - 2) + '</a></li>';
+        }
+        if (currentPage > 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage - 1) + '</a></li>';
+        }
+        str = str + '<li class="page-item"><a class="page-link"><b id="current-page">' + currentPage + '</b></a></li>';
+        if (totalPage - currentPage > 0) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage + 1) + '</a></li>';
+        }
+        if (totalPage - currentPage > 1) {
+            str = str + '<li class="page-item"><a class="page-link pag">' + (currentPage + 2) + '</a></li>';
+        }
+        if (totalPage - currentPage > 3) {
+            str = str + '<li class="page-item page-link">...</li>';
+        }
+        if (totalPage - currentPage > 2) {
+            str = str + '<li class="page-item"><a class="page-link pag">'+totalPage+'</a></li>';
+        }
+        if (currentPage != totalPage) {
+            str = str + '<li class="page-item"><a class="page-link pag">&gt;</a></li>';
+        }
+        str = str + '</ul></div>';
+        $("#paginationBerita").html(str);
+        $(".pag,.page-link").click(function(){
+            console.log("hey");
+            var param = $(this).html();
+            if (param == "&lt;") {
+                retrievePage(keyword, parseInt($("#current-page").html()) - 1, websiteName);
+            }
+            else if (param == "&gt;") {
+                retrievePage(keyword, parseInt($("#current-page").html()) + 1, websiteName);
+            }
+            else {
+                retrievePage(keyword, parseInt(param), websiteName);
+            }
+        });
+
+    }
+
+    function filterWeb(keyword, website) {
+    // Melakukan filter berita berdasarkan website tertentu
+    // keyword : kata kunci pencarian
+    // website : website mana yang dipilih sebagai filter
+        $("#berita_container").html("Loading...");
+        var startDate = document.getElementById("startDate").value;
+        var endDate = document.getElementById("endDate").value;
+        retrievePage(keyword,1, website, startDate, endDate);
+    }
+
+   function toggleFilter() {
+    // Menyembunyikan dan Menampilkan tombol filter tambahan
+        var x = document.getElementById("filterTambahan");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+
+    function filterDate(){
+    // Melakukan filter berita berdasarkan tanggal.
+    // Berita akan otomatis berubah ketika tanggal dipilih
+        dateValidation();
+        keyword = "{{keyword}}";
+        var website = document.getElementById('namaWeb').value;
+        // var startDate = '2018-08-01';
+        // var endDate = '2018-08-31';
+        var startDate = document.getElementById('startDate').value;
+        var endDate = document.getElementById('endDate').value;
+        retrievePage(keyword,1, website, startDate, endDate);
+    }
+
+    function checkDate(){
+    // Melakukan validasi tanggal
+    // Hal ini karena tidak mungkin melakukan pencarian berita masa depan
+        var today = new Date();
+        var day = today.getDate();
+        var month = today.getMonth()+1; //January is 0!
+        var year = today.getFullYear();
+        if(day<10){
+            day='0'+day
+        } 
+        if(month<10){
+            month='0'+month
+        } 
+
+        today = year+'-'+month+'-'+day;
+        document.getElementById("startDate").setAttribute("max", today);
+        document.getElementById("endDate").setAttribute("max", today);
+    }
+
+    function dateValidation(){
+    // Melakukan validasi tanggal dalam pencarian.
+    // Dalam hal ini tanggal akhir tidak boleh lebih besar daripada tanggal awal.
+    var startDate = document.getElementById("startDate").value;
+    var endDate = document.getElementById("endDate").value;
+
+    if ((Date.parse(endDate) < Date.parse(startDate))) {
+        alert("Tanggal Akhir harus lebih besar daripada Tanggal Awal");
+        document.getElementById("endDate").value = "";
+    }
+    };
+
+    $(document).ready(function() {
+        retrievePage('{{keyword}}',1, 'all');
+        filterDate();
+        checkDate();
+        dateValidation();
+    });
+
+    </script>
+{% endblock %}
